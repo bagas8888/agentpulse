@@ -1,0 +1,1 @@
+{"dependencies":{"ethers":"^6.13.4","solc":"^0.8.28"},"description":"AgentPulse — on-chain activity & reputation passport for Agent ID holders (BNB Chain)","devDependencies":{"ganache":"^7.9.2"},"name":"agentpulse","private":true,"scripts":{"compile":"node scripts/compile.js","deploy":"node scripts/deploy.js","test":"node scripts/test.js"},"version":"1.0.0"}

@@ -1,0 +1,12 @@
+{
+  "project": "AgentPulse",
+  "chain": "BNB Smart Chain",
+  "chainId": 56,
+  "contract": "0x1325848C7a34B11806144416F9F1833e8cA91780",
+  "agentIdContract": "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
+  "deployer": "0x1930F8Ec91880bC190f8A3216EfeaCeCD84BEd80",
+  "deployTx": "0x2646e5546aa093c28bb6079740209f74da834921eb6ceee7cdeb5e4b217e556d",
+  "block": 134311018,
+  "gasUsed": "992258",
+  "deployedAt": "2026-11-18T12:25:37.992Z"
+}
