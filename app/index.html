@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentPulse — Activity & Reputation Passport for Agent ID Holders</title>
+<meta name="description" content="AgentPulse turns your Agent ID into an on-chain activity passport on BNB Chain: claim a membership stamp, check in daily, build streaks and reputation points, and post signals — gated entirely by Agent ID.">
+<style>
+  :root { --bg:#0b0e14; --card:#141926; --line:#232b3f; --txt:#e8ecf4; --mut:#8b96ad; --acc:#f0b90b; --acc2:#7c5cff; --ok:#2ecc71; --bad:#ff5c5c; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; line-height:1.55; }
+  .wrap { max-width:880px; margin:0 auto; padding:24px 16px 64px; }
+  header { text-align:center; padding:36px 0 8px; }
+  .logo { font-size:44px; font-weight:800; letter-spacing:-1px; }
+  .logo span { color:var(--acc); }
+  .tag { color:var(--mut); max-width:620px; margin:10px auto 0; }
+  .pill { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:3px 12px; font-size:12px; color:var(--mut); margin-top:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:26px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .card h3 { font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--mut); margin-bottom:10px; }
+  .big { font-size:30px; font-weight:700; }
+  .row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--line); font-size:14px; }
+  .row:last-child { border-bottom:none; }
+  .row b { font-weight:600; }
+  button { background:var(--acc); color:#111; border:none; border-radius:10px; padding:12px 18px; font-size:15px; font-weight:700; cursor:pointer; width:100%; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button.ghost { background:transparent; color:var(--txt); border:1px solid var(--line); }
+  input[type=text] { width:100%; background:#0d1119; border:1px solid var(--line); border-radius:10px; color:var(--txt); padding:11px 12px; font-size:14px; margin-bottom:10px; }
+  .center { text-align:center; }
+  #status { min-height:22px; font-size:14px; margin-top:12px; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); } .mut { color:var(--mut); }
+  section { margin-top:38px; }
+  section h2 { font-size:22px; margin-bottom:10px; }
+  section p, section li { color:#c4cbdb; font-size:15px; }
+  ul { padding-left:20px; }
+  code { background:#0d1119; border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:13px; word-break:break-all; }
+  pre { background:#0d1119; border:1px solid var(--line); border-radius:10px; padding:14px; overflow-x:auto; font-size:13px; margin-top:10px; }
+  a { color:var(--acc); }
+  footer { margin-top:44px; text-align:center; color:var(--mut); font-size:13px; }
+  .sig { font-style:italic; color:#dfe5f0; background:#0d1119; border:1px solid var(--line); border-radius:10px; padding:12px; margin-top:8px; word-break:break-word; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">Agent<span>Pulse</span></div>
+    <p class="tag">The on-chain activity &amp; reputation passport for <b>Agent ID</b> holders.
+    Claim your stamp, check in daily, build your streak — and prove your agent is alive, active and trusted. Every action is gated by Agent ID on BNB Chain.</p>
+    <div class="pill">BNB Smart Chain · Gated by Agent ID (SPACE ID) · No fees, no deposits, points have no monetary value</div>
+  </header>
+
+  <div class="card center" style="margin-top:26px">
+    <button id="connectBtn" onclick="connect()">Connect Wallet</button>
+    <div id="status" class="mut">Connect a wallet that holds an Agent ID (name.ai) to begin.</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Your Passport</h3>
+      <div class="row"><span>Wallet</span><b id="uiWallet">—</b></div>
+      <div class="row"><span>Agent ID holder</span><b id="uiIsAgent">—</b></div>
+      <div class="row"><span>Stamp</span><b id="uiStamp">—</b></div>
+      <div class="row"><span>Points</span><b id="uiPoints">—</b></div>
+      <div class="row"><span>Streak (current / best)</span><b id="uiStreak">—</b></div>
+      <div class="row"><span>Check-ins</span><b id="uiCheckins">—</b></div>
+      <div class="row"><span>Signals posted</span><b id="uiSignals">—</b></div>
+    </div>
+    <div class="card">
+      <h3>Network Stats</h3>
+      <div class="row"><span>Members</span><b id="uiMembers">—</b></div>
+      <div class="row"><span>Total check-ins</span><b id="uiTotalCheckins">—</b></div>
+      <div class="row"><span>Total signals</span><b id="uiTotalSignals">—</b></div>
+      <div class="row"><span>Contract</span><b><a id="uiContract" target="_blank" rel="noopener">BscScan ↗</a></b></div>
+      <div class="row"><span>Source code</span><b><a id="uiGithub" target="_blank" rel="noopener">GitHub ↗</a></b></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>1 · Claim your stamp</h3>
+      <p class="mut" style="font-size:14px;margin-bottom:12px">One-time membership stamp for verified Agent ID holders. +100 points.</p>
+      <button id="claimBtn" onclick="claimStamp()" disabled>Claim Stamp</button>
+    </div>
+    <div class="card">
+      <h3>2 · Daily check-in</h3>
+      <p class="mut" style="font-size:14px;margin-bottom:12px">Once per UTC day. 10 points + streak bonus (up to +10). Miss a day and the streak resets.</p>
+      <button id="checkinBtn" onclick="checkIn()" disabled>Check In</button>
+    </div>
+    <div class="card">
+      <h3>3 · Post a signal</h3>
+      <input type="text" id="signalInput" maxlength="140" placeholder="Your pulse — max 140 characters">
+      <button id="signalBtn" onclick="postSignal()" disabled>Post Signal (+2 pts/day)</button>
+      <div id="mySignal"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Why Agent ID is the core of AgentPulse</h2>
+    <p>Agent ID is not a login decoration here — it is the contract-level gate for <i>every</i> state-changing action.
+    Before a stamp can be claimed, a check-in recorded or a signal posted, the AgentPulse contract calls
+    <code>balanceOf(address)</code> on the official Agent ID contract
+    (<code>0x60b9262456de011f7d15a54cdd8c48baaa8b022f</code>) and reverts unless the caller holds an Agent ID.
+    That makes every member, point and streak on AgentPulse a <b>verified Agent ID identity</b> by construction —
+    no sybil sign-ups, no fake activity.</p>
+  </section>
+
+  <section>
+    <h2>Built to be composed on</h2>
+    <p>Points, streaks and membership are public on-chain data. Any dApp can read them to offer
+    Agent-ID-native features — allowlists, reputation tiers, access control — without trusting AgentPulse:</p>
+    <pre>// Solidity — gate your feature on AgentPulse reputation
+IAgentPulse pulse = IAgentPulse(AGENTPULSE_ADDRESS);
+require(pulse.isMember(msg.sender), "members only");
+require(pulse.pointsOf(msg.sender) >= 500, "reputation too low");</pre>
+  </section>
+
+  <section>
+    <h2>Security by design</h2>
+    <ul>
+      <li><b>No owner, no admin keys.</b> Nobody can pause, tax, freeze or change the rules — ever.</li>
+      <li><b>No funds.</b> The contract is not payable and never takes custody of user assets. No approvals are ever requested.</li>
+      <li><b>One external call only:</b> the read-only Agent ID <code>balanceOf</code> check.</li>
+      <li><b>Open source &amp; verified</b> on BscScan — read every line before you interact.</li>
+      <li>Points are a non-transferable reputation score with <b>no monetary value</b> and no promised returns.</li>
+    </ul>
+  </section>
+
+  <footer>
+    AgentPulse · Built for the Binance Wallet × BNB Chain Agent ID Hackathon ·
+    Contract <a id="footContract" target="_blank" rel="noopener">BscScan</a> ·
+    <a id="footGithub" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script>
+  // Filled in after deployment (see deployment.json in the repo).
+  const CONTRACT_ADDRESS = "0x1325848C7a34B11806144416F9F1833e8cA91780";
+  const GITHUB_URL = "https://github.com/bagasprdn9/agentpulse";
+  const AGENT_ID = "0x60b9262456de011f7d15a54cdd8c48baaa8b022f";
+  const BSC = { chainId: "0x38", chainName: "BNB Smart Chain", nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 }, rpcUrls: ["https://bsc-dataseed.binance.org"], blockExplorerUrls: ["https://bscscan.com"] };
+  const ABI = [
+    "function isAgent(address) view returns (bool)",
+    "function isMember(address) view returns (bool)",
+    "function pointsOf(address) view returns (uint32)",
+    "function memberOf(address) view returns (tuple(uint64 stampId, uint64 joinedAt, uint32 points, uint32 streak, uint32 bestStreak, uint32 checkIns, uint32 lastCheckInDay, uint32 signals, uint32 lastSignalDay))",
+    "function lastSignal(address) view returns (string)",
+    "function totalMembers() view returns (uint256)",
+    "function totalCheckIns() view returns (uint256)",
+    "function totalSignals() view returns (uint256)",
+    "function claimStamp()",
+    "function checkIn()",
+    "function postSignal(string message)"
+  ];
+  let provider, signer, pulse, myAddr;
+
+  const $ = (id) => document.getElementById(id);
+  function setStatus(msg, cls) { const s = $("status"); s.textContent = msg; s.className = cls || ""; }
+  const bscLink = "https://bscscan.com/address/" + CONTRACT_ADDRESS;
+  $("uiContract").href = bscLink; $("footContract").href = bscLink;
+  $("uiGithub").href = GITHUB_URL; $("footGithub").href = GITHUB_URL;
+
+  async function connect() {
+    if (!window.ethereum) { setStatus("No wallet found. Open this page in Binance Wallet or a Web3 browser.", "bad"); return; }
+    try {
+      const cur = await window.ethereum.request({ method: "eth_chainId" });
+      if (cur !== BSC.chainId) {
+        try { await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BSC.chainId }] }); }
+        catch (e) { await window.ethereum.request({ method: "wallet_addEthereumChain", params: [BSC] }); }
+      }
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      myAddr = await signer.getAddress();
+      pulse = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+      setStatus("Connected: " + myAddr, "ok");
+      await refresh();
+    } catch (e) { setStatus("Connection failed: " + (e.shortMessage || e.message), "bad"); }
+  }
+
+  async function refresh() {
+    if (!pulse) return;
+    const read = pulse.connect(provider);
+    const [isAg, m, tm, tc, ts, sig] = await Promise.all([
+      read.isAgent(myAddr), read.memberOf(myAddr), read.totalMembers(), read.totalCheckIns(), read.totalSignals(), read.lastSignal(myAddr)
+    ]);
+    $("uiWallet").textContent = myAddr.slice(0, 6) + "…" + myAddr.slice(-4);
+    $("uiIsAgent").textContent = isAg ? "Yes ✓" : "No — claim an Agent ID in Binance Wallet first";
+    $("uiStamp").textContent = Number(m.stampId) > 0 ? "#" + m.stampId : "Not claimed";
+    $("uiPoints").textContent = m.points;
+    $("uiStreak").textContent = m.streak + " / " + m.bestStreak;
+    $("uiCheckins").textContent = m.checkIns;
+    $("uiSignals").textContent = m.signals;
+    $("uiMembers").textContent = tm; $("uiTotalCheckins").textContent = tc; $("uiTotalSignals").textContent = ts;
+    $("mySignal").innerHTML = sig ? '<div class="sig">“' + sig.replace(/</g, "&lt;") + '”</div>' : "";
+    const today = Math.floor(Date.now() / 86400000);
+    $("claimBtn").disabled = !isAg || Number(m.stampId) > 0;
+    $("checkinBtn").disabled = !isAg || Number(m.stampId) === 0 || Number(m.lastCheckInDay) === today;
+    $("signalBtn").disabled = !isAg || Number(m.stampId) === 0;
+    if (isAg && Number(m.lastCheckInDay) === today) setStatus("Checked in for today. Come back tomorrow to grow your streak!", "ok");
+  }
+
+  async function runTx(label, fn) {
+    try { setStatus(label + " — confirm in your wallet…", ""); const tx = await fn(); setStatus(label + " — pending: " + tx.hash, ""); await tx.wait(); setStatus(label + " confirmed ✓", "ok"); await refresh(); }
+    catch (e) { setStatus(label + " failed: " + (e.shortMessage || e.message), "bad"); }
+  }
+  function claimStamp() { runTx("Claim stamp", () => pulse.claimStamp()); }
+  function checkIn() { runTx("Check-in", () => pulse.checkIn()); }
+  function postSignal() { const v = $("signalInput").value.trim(); if (!v) { setStatus("Write a signal first.", "bad"); return; } runTx("Post signal", () => pulse.postSignal(v)); }
+
+  // Public read-only stats even before connecting.
+  (async () => {
+    try {
+      const p = new ethers.JsonRpcProvider("https://bsc-dataseed.binance.org");
+      const c = new ethers.Contract(CONTRACT_ADDRESS, ABI, p);
+      const [tm, tc, ts] = await Promise.all([c.totalMembers(), c.totalCheckIns(), c.totalSignals()]);
+      $("uiMembers").textContent = tm; $("uiTotalCheckins").textContent = tc; $("uiTotalSignals").textContent = ts;
+    } catch (e) { /* contract not live yet */ }
+  })();
+</script>
+</body>
+</html>
